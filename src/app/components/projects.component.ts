@@ -1,7 +1,8 @@
 import { NgClass } from '@angular/common';
-import { Component, computed, inject, Injector, Signal, signal, TemplateRef, WritableSignal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { Component, inject, Injector, ResourceLoaderParams, ResourceRef, signal, TemplateRef, WritableSignal } from '@angular/core';
+import { rxResource } from '@angular/core/rxjs-interop';
 
+import { Observable } from 'rxjs';
 import { AppService } from '../app.service';
 import { Project } from '../interfaces/project.interface';
 
@@ -19,7 +20,7 @@ import { Project } from '../interfaces/project.interface';
           <ul>
             <!-- Single Filter Starts -->
             <li>
-              <a [ngClass]="currentTab() === 'All' ? 'current' : ''" (click)="getProjects()" href="javascript:void(0);">All Projects</a>
+              <a [ngClass]="currentTab() === '' ? 'current' : ''" (click)="getProjects()" href="javascript:void(0);">All Projects</a>
             </li>
             <!-- Single Filter Ends -->
             <!-- Single Filter Starts -->
@@ -50,7 +51,7 @@ import { Project } from '../interfaces/project.interface';
         <div class="portfolio-item col-12">
           <div class="item-wrapper row">
             <!-- Single Item Starts -->
-            @for (item of displayProjects(); track $index) {
+            @for (item of projectsData$.value(); track $index) {
               <div class="item web-templates col-md-4 col-sm-6 col-12">
                 <!-- Image Starts -->
                 <div class="image">
@@ -182,18 +183,12 @@ import { Project } from '../interfaces/project.interface';
     </ng-template>
   `,
   styles: [],
-  standalone: true,
   imports: [NgClass]
 })
 export class ProjectsComponent {
-  readonly registerService = inject(AppService);
+  readonly registerService: AppService = inject(AppService);
   readonly injector = inject(Injector);
 
-  projectsData$: Signal<Project[]> = toSignal(this.registerService.getProjects(''), { initialValue: [] });
-  projectsData: Signal<WritableSignal<Project[]>> = computed(() => signal(this.projectsData$()));
-  displayProjects: Signal<Project[]> = this.projectsData();
-
-  currentTab = signal('All');
   currentProject: Project = {
     id: 0,
     image: '',
@@ -204,6 +199,12 @@ export class ProjectsComponent {
     description: '',
     link: null
   };
+
+  currentTab: WritableSignal<string> = signal('');
+  projectsData$: ResourceRef<Project[]> = rxResource({
+    request: this.currentTab,
+    loader: ({ request }: ResourceLoaderParams<string>): Observable<Project[]> => this.registerService.getProjects(request)
+  });
 
   openProjectDetails(modelContent: TemplateRef<unknown>, projectData: Project): void {
     this.currentProject = projectData;
@@ -217,11 +218,6 @@ export class ProjectsComponent {
   }
 
   getProjects(category = ''): void {
-    this.currentTab.update(() => category || 'All');
-    this.projectsData$ = toSignal(this.registerService.getProjects(category), {
-      initialValue: [],
-      injector: this.injector
-    });
-    this.projectsData().set(this.projectsData$());
+    this.currentTab.set(category || '');
   }
 }

@@ -117,14 +117,13 @@ import { ContactInfo } from '../interfaces/personal.interface';
     }
     <!-- Contact Info Ends -->
   `,
-  styles: [],
-  standalone: true
+  styles: []
 })
 export class ContactinfoComponent {
-  readonly registerService = inject(AppService);
+  readonly registerService: AppService = inject(AppService);
 
   contactInfo$: Signal<ContactInfo | undefined> = toSignal(this.registerService.getContactInfo());
 
-  instagramLink = 'https://www.instagram.com/itsmenarene';
-  twitterLink = 'https://twitter.com/itsmenarene';
+  instagramLink: string = 'https://www.instagram.com/itsmenarene';
+  twitterLink: string = 'https://twitter.com/itsmenarene';
 }

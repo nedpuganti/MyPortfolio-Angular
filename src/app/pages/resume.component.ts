@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
 
 import { EducationComponent } from '../components/education.component';
 import { FunfactsComponent } from '../components/funfacts.component';
@@ -28,9 +27,8 @@ import { SkillsComponent } from '../components/skills.component';
     <!-- Button Wrapper Ends -->
   `,
   styles: [],
-  standalone: true,
-  imports: [RouterLink, SkillsComponent, EducationComponent, FunfactsComponent]
+  imports: [SkillsComponent, EducationComponent, FunfactsComponent]
 })
 export class ResumeComponent {
-  resumeLink = '#';
+  resumeLink: string = '#';
 }
